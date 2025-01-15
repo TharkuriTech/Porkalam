@@ -9,80 +9,84 @@
   <meta name="description" content="Coming soon...">
   <meta property="og:image"
     content="https://firebasestorage.googleapis.com/v0/b/tharkuri-tech.appspot.com/o/Porkalam%2FIcon%2Fbattle.png?alt=media&token=86c2a671-f0bf-436e-9f4f-b7da32fe0625" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: #fff;
-      font-family: 'Arial', sans-serif;
-      background-image: url("bf.jpg");
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      position: relative;
-    }
-
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-    }
-
-    .container {
-      z-index: 1;
-      text-align: center;
-      padding: 0 20px;
-      /* Add padding for small screens */
-    }
-
-    span {
-      background-image: url("flame.png");
-      background-position: 0 -1000px;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: fire 15s linear infinite;
-      font-size: 4rem;
-      font-weight: bold;
-    }
-
-    h1 {
-      margin: 0;
-    }
-
-    @keyframes fire {
-      0% {
-        background-position: 50% -50%;
-      }
-
-      100% {
-        background-position: 0% -25%;
-      }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      span {
-        font-size: 2.5rem;
-        /* Adjust font size for tablets */
-      }
-    }
-
-    @media (max-width: 480px) {
-      span {
-        font-size: 2rem;
-        /* Adjust font size for mobile phones */
-      }
-    }
-  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 </head>
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+    font-family: 'Arial', sans-serif;
+    background-image: url("bf.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .container {
+    z-index: 1;
+    text-align: center;
+    padding: 0 20px;
+    /* Add padding for small screens */
+  }
+
+  span {
+    background-image: url("flame.png");
+    background-position: 0 -1000px;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fire 15s linear infinite;
+    font-size: 4rem;
+    font-weight: bold;
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+  @keyframes fire {
+    0% {
+      background-position: 50% -50%;
+    }
+
+    100% {
+      background-position: 0% -25%;
+    }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    span {
+      font-size: 2.5rem;
+      /* Adjust font size for tablets */
+    }
+  }
+
+  @media (max-width: 480px) {
+    span {
+      font-size: 2rem;
+      /* Adjust font size for mobile phones */
+    }
+  }
+</style>
+
 <body>
   <div class="overlay"></div>
   <div class="container">
@@ -90,6 +94,44 @@
       <h1><span>போர்க்களம் விரைவில்...</span></h1>
     </div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://porkalam-com-default-rtdb.firebaseio.com/",
+    };
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    function getUserIP() {
+      return fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => data.ip);
+    }
+
+    async function saveIPToFirebase() {
+      const ip = await getUserIP();
+      const uniqueKey = ip.replace(/\./g, "-");
+      const now = new Date();
+      const date = now.toISOString().split("T")[0];
+      const time = now.toTimeString().split(" ")[0];
+      const visitsRef = ref(database, `visits/${date}/${uniqueKey}/${time}`);
+
+      set(visitsRef, {
+        ip: ip
+      })
+        .then(() => {
+          //console.log("Visit recorded successfully");
+        })
+        .catch((error) => {
+          //console.error("Error recording visit: ", error);
+        });
+    }
+
+    saveIPToFirebase();
+  </script>
 </body>
 
 </html>
