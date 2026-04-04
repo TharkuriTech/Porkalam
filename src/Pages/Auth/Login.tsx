@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
 
 const Login: React.FC = () => {
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         username: '',
         password: '',
@@ -31,6 +33,15 @@ const Login: React.FC = () => {
                 password: form.password
             };
             const response = await apiClient.post('/Auth/login', data);
+            
+            if (response.data && response.data.token) {
+                // Store user data and token in localStorage
+                localStorage.setItem('user', JSON.stringify(response.data));
+                localStorage.setItem('token', response.data.token);
+                
+                // Redirect to home page
+                navigate('/home');
+            }
             return response.data;
         }
         catch (error) {

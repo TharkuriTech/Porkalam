@@ -56,7 +56,7 @@ const ResetPassword: React.FC = () => {
                     <h2>Reset Password</h2>
                     <p>Enter your token and new password</p>
                 </div>
-                {responseMessage && <div className={`response-message ${responseMessage.includes('successfully') ? 'response-success' : 'response-error'}`}>{responseMessage}</div>}
+                {responseMessage && <div className={`response-message ${responseMessage.includes('successful') ? 'response-success' : 'response-error'}`}>{responseMessage}</div>}
                 <form className="auth-form" onSubmit={handleSubmit}>
                     {/* Token */}
                     <div className="form-group d-none">

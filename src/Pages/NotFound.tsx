@@ -18,7 +18,7 @@ const NotFound: React.FC = () => {
             <div className="auth-card">
                 <div className="auth-header mb-0">
                     <h2>404 - Page Not Found</h2>
-                    <p>Redirecting to login page...</p>
+                    <p>Redirecting to...</p>
                 </div>
             </div>
         </div>
