@@ -121,19 +121,21 @@ const Register: React.FC = () => {
             };
 
             const response = await apiClient.post('/Auth/register', payload);
-            setResponseMessage('Registration successful! Please proceed to login.');
-            setForm({
-                fullName: '',
-                fatherName: '',
-                dateOfBirth: '',
-                gender: 'M',
-                password: '',
-                email: '',
-                mobileNumber: '',
-                constituencyId: 0,
-                stateId: 0,
-                countryId: 0,
-            });
+            setResponseMessage(response.data.message);
+            if (response.data.isSuccess) {
+                setForm({
+                    fullName: '',
+                    fatherName: '',
+                    dateOfBirth: '',
+                    gender: 'M',
+                    password: '',
+                    email: '',
+                    mobileNumber: '',
+                    constituencyId: 0,
+                    stateId: 0,
+                    countryId: 0,
+                });
+            }
         } catch (error) {
             //   console.error('Register failed:', error);
             setResponseMessage('Registration failed. Please check your details and try again.');
