@@ -283,6 +283,7 @@ const Register: React.FC = () => {
                                     onChange={handleChange}
                                     required
                                     disabled={!form.countryId}
+                                    title={!form.countryId ? "Please select a country first" : ""}
                                 >
                                     <option value="">Select State</option>
                                     {filteredStates.map((s: any) => (
@@ -303,6 +304,8 @@ const Register: React.FC = () => {
                                     onChange={handleChange}
                                     required
                                     disabled={!form.stateId}
+                                    title={!form.stateId ? "Please select a State first" : ""}
+
                                 >
                                     <option value="">Select Constituency</option>
                                     {filteredConstituencies.map((c: any) => (
