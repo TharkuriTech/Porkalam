@@ -635,6 +635,10 @@ body::before {
     display: none;
 }
 
+.mb-0{
+    margin-bottom: 0;
+}
+
 /* Mobile Responsive */
 @media (max-width: 480px) {
     .auth-card {
