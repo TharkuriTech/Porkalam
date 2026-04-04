@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
+import { getIPAddress } from '../../Util/Util.ts';
 
 const ForgotPassword: React.FC = () => {
     const [form, setForm] = useState({
@@ -18,17 +19,6 @@ const ForgotPassword: React.FC = () => {
         });
     };
 
-    const getIPAddress = async (): Promise<string> => {
-        try {
-            const response = await fetch('https://api.ipify.org?format=json');
-            const data = await response.json();
-            return data.ip;
-        } catch (error) {
-            console.error('Failed to get IP address:', error);
-            return '';
-        }
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             e.preventDefault();
@@ -40,7 +30,7 @@ const ForgotPassword: React.FC = () => {
                 IPAddress: ipAddress
             };
             const response = await apiClient.post('/Auth/forgot-password', data);
-            setResponseMessage('Password reset link has been sent to your email.');
+            setResponseMessage(response.data.message);
         } catch (error) {
             console.error('Forgot password failed:', error);
             setResponseMessage('Failed to send reset link. Please try again.');
@@ -85,7 +75,7 @@ const ForgotPassword: React.FC = () => {
 
                 <div className="signup-link">
                     <p>
-                        Remember your password? <a href="/login">Sign in</a>
+                        Remember your password? <a href="/">Sign in</a>
                     </p>
                 </div>
             </div>

@@ -64,7 +64,7 @@ const Login: React.FC = () => {
                                 required
                                 placeholder=""
                             />
-                            <label>Username/Email/Phone number</label>
+                            <label>Username/Email/Phone</label>
                         </div>
                     </div>
 

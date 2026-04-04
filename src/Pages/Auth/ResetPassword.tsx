@@ -40,7 +40,7 @@ const ResetPassword: React.FC = () => {
             };
             const response = await apiClient.post('/Auth/reset-password', data);
             setForm(prev => ({ ...prev, newPassword: '' }));
-            setResponseMessage('Password has been reset successfully.');
+            setResponseMessage(response.data.message);
         } catch (error) {
             console.error('Reset password failed:', error);
             setResponseMessage('Failed to reset password. Invalid/Expired token.');
@@ -108,7 +108,7 @@ const ResetPassword: React.FC = () => {
 
                 <div className="signup-link">
                     <p>
-                        Remember your password? <a href="/login">Sign in</a>
+                        Remember your password? <a href="/">Sign in</a>
                     </p>
                 </div>
             </div>
