@@ -37,6 +37,8 @@ const Register: React.FC = () => {
 
     const [loading, setLoading] = useState(false);
     const [responseMessage, setResponseMessage] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
     const [comboData, setComboData] = useState({
         Country: [],
         State: [],
@@ -145,192 +147,201 @@ const Register: React.FC = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <div className="auth-header">
-                    <h2>Create Account</h2>
-                    <p>Register to access your dashboard</p>
-                </div>
-
-                {responseMessage && (
-                    <div className={`response-message ${responseMessage.includes('successful') ? 'response-success' : 'response-error'}`}>
-                        {responseMessage}
+        <div className="auth-body">
+            <div className="auth-container w-100">
+                <div className="auth-card">
+                    <div className="auth-header">
+                        <h2>Create Account</h2>
+                        <p>Register to access your dashboard</p>
                     </div>
-                )}
 
-                <form className="auth-form" onSubmit={handleSubmit}>
-                    <div className='reg-form full-width'>
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={form.fullName}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder=''
-                                />
-                                <label>Full Name</label>
+                    {responseMessage && (
+                        <div className={`response-message ${responseMessage.includes('successful') ? 'response-success' : 'response-error'}`}>
+                            {responseMessage}
+                        </div>
+                    )}
+
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        <div className='reg-form full-width'>
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        value={form.fullName}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder=''
+                                    />
+                                    <label>Full Name</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <input
+                                        type="text"
+                                        name="fatherName"
+                                        value={form.fatherName}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder=''
+                                    />
+                                    <label>Father Name</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <input
+                                        type="date"
+                                        name="dateOfBirth"
+                                        value={form.dateOfBirth}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder=''
+                                    />
+                                    <label>Date of Birth</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <select name="gender" value={form.gender} onChange={handleChange} required>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                        <option value="O">Other</option>
+                                    </select>
+                                    <label>Gender</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={form.password}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder=''
+                                    />
+                                    <label>Password</label>
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        <span className={`eye-icon ${showPassword ? 'show-password' : ''}`}></span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={form.email}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder=''
+                                    />
+                                    <label>Email Address</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <input
+                                        type="tel"
+                                        name="mobileNumber"
+                                        value={form.mobileNumber}
+                                        onChange={handleChange}
+                                        required
+                                        pattern="[0-9]{10}"
+                                        placeholder="1234567890"
+                                    />
+                                    <label>Mobile Number</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <select
+                                        name="countryId"
+                                        value={form.countryId}
+                                        onChange={handleChange}
+                                        required
+                                    >
+                                        <option value="">Select Country</option>
+                                        {comboData.Country.map((c: any) => (
+                                            <option key={c.lookupId} value={c.lookupId}>
+                                                {c.value}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <label>Country</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <select
+                                        name="stateId"
+                                        value={form.stateId}
+                                        onChange={handleChange}
+                                        required
+                                        disabled={!form.countryId}
+                                        title={!form.countryId ? "Please select a country first" : ""}
+                                    >
+                                        <option value="">Select State</option>
+                                        {filteredStates.map((s: any) => (
+                                            <option key={s.lookupId} value={s.lookupId}>
+                                                {s.value}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <label>State</label>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <div className="input-wrapper">
+                                    <select
+                                        name="constituencyId"
+                                        value={form.constituencyId}
+                                        onChange={handleChange}
+                                        required
+                                        disabled={!form.stateId}
+                                        title={!form.stateId ? "Please select a State first" : ""}
+
+                                    >
+                                        <option value="">Select Constituency</option>
+                                        {filteredConstituencies.map((c: any) => (
+                                            <option key={c.lookupId} value={c.lookupId}>
+                                                {c.value}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <label>Constituency</label>
+                                </div>
                             </div>
                         </div>
+                        <button type="submit" className={`btn auth-btn ${loading ? 'loading' : ''}`}>
+                            <span className="btn-text">Register</span>
+                            <span className="btn-loader"></span>
+                        </button>
 
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <input
-                                    type="text"
-                                    name="fatherName"
-                                    value={form.fatherName}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder=''
-                                />
-                                <label>Father Name</label>
-                            </div>
+                        <div className="signup-link">
+                            <p>
+                                Already have an account? <a href="/">Sign in</a>
+                            </p>
                         </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <input
-                                    type="date"
-                                    name="dateOfBirth"
-                                    value={form.dateOfBirth}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder=''
-                                />
-                                <label>Date of Birth</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <select name="gender" value={form.gender} onChange={handleChange} required>
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                    <option value="O">Other</option>
-                                </select>
-                                <label>Gender</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={form.password}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder=''
-                                />
-                                <label>Password</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={form.email}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder=''
-                                />
-                                <label>Email Address</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <input
-                                    type="tel"
-                                    name="mobileNumber"
-                                    value={form.mobileNumber}
-                                    onChange={handleChange}
-                                    required
-                                    pattern="[0-9]{10}"
-                                    placeholder="1234567890"
-                                />
-                                <label>Mobile Number</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <select
-                                    name="countryId"
-                                    value={form.countryId}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Select Country</option>
-                                    {comboData.Country.map((c: any) => (
-                                        <option key={c.lookupId} value={c.lookupId}>
-                                            {c.value}
-                                        </option>
-                                    ))}
-                                </select>
-                                <label>Country</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <select
-                                    name="stateId"
-                                    value={form.stateId}
-                                    onChange={handleChange}
-                                    required
-                                    disabled={!form.countryId}
-                                    title={!form.countryId ? "Please select a country first" : ""}
-                                >
-                                    <option value="">Select State</option>
-                                    {filteredStates.map((s: any) => (
-                                        <option key={s.lookupId} value={s.lookupId}>
-                                            {s.value}
-                                        </option>
-                                    ))}
-                                </select>
-                                <label>State</label>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <div className="input-wrapper">
-                                <select
-                                    name="constituencyId"
-                                    value={form.constituencyId}
-                                    onChange={handleChange}
-                                    required
-                                    disabled={!form.stateId}
-                                    title={!form.stateId ? "Please select a State first" : ""}
-
-                                >
-                                    <option value="">Select Constituency</option>
-                                    {filteredConstituencies.map((c: any) => (
-                                        <option key={c.lookupId} value={c.lookupId}>
-                                            {c.value}
-                                        </option>
-                                    ))}
-                                </select>
-                                <label>Constituency</label>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" className={`btn auth-btn ${loading ? 'loading' : ''}`}>
-                        <span className="btn-text">Register</span>
-                        <span className="btn-loader"></span>
-                    </button>
-
-                    <div className="signup-link">
-                        <p>
-                            Already have an account? <a href="/">Sign in</a>
-                        </p>
-                    </div>
-                </form>
+                    </form>
+                </div >
             </div >
-        </div >
+        </div>
     );
 };
 

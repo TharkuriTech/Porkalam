@@ -14,11 +14,13 @@ const NotFound: React.FC = () => {
     }, [navigate]);
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <div className="auth-header mb-0">
-                    <h2>404 - Page Not Found</h2>
-                    <p>Redirecting to...</p>
+        <div className="auth-body">
+            <div className="auth-container">
+                <div className="auth-card">
+                    <div className="auth-header mb-0">
+                        <h2>404 - Page Not Found</h2>
+                        <p>Redirecting to...</p>
+                    </div>
                 </div>
             </div>
         </div>

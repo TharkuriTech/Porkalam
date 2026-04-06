@@ -50,66 +50,68 @@ const ResetPassword: React.FC = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <div className="auth-header">
-                    <h2>Reset Password</h2>
-                    <p>Enter your token and new password</p>
-                </div>
-                {responseMessage && <div className={`response-message ${responseMessage.includes('successful') ? 'response-success' : 'response-error'}`}>{responseMessage}</div>}
-                <form className="auth-form" onSubmit={handleSubmit}>
-                    {/* Token */}
-                    <div className="form-group d-none">
-                        <div className="input-wrapper">
-                            <input
-                                type="text"
-                                name="token"
-                                value={form.token}
-                                onChange={handleChange}
-                                required
-                                placeholder=""
-                                readOnly
-                            />
-                            <label>Token</label>
-                        </div>
+        <div className="auth-body">
+            <div className="auth-container">
+                <div className="auth-card">
+                    <div className="auth-header">
+                        <h2>Reset Password</h2>
+                        <p>Enter your token and new password</p>
                     </div>
-
-                    {/* New Password */}
-                    <div className="form-group">
-                        <div className="input-wrapper password-wrapper">
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                name="newPassword"
-                                value={form.newPassword}
-                                onChange={handleChange}
-                                required
-                                placeholder=""
-                            />
-                            <label>New Password</label>
-                            <button
-                                type="button"
-                                className="password-toggle"
-                                onClick={() => setShowPassword(!showPassword)}
-                            >
-                                <span className={`eye-icon ${showPassword ? 'show-password' : ''}`}></span>
-                            </button>
+                    {responseMessage && <div className={`response-message ${responseMessage.includes('successful') ? 'response-success' : 'response-error'}`}>{responseMessage}</div>}
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        {/* Token */}
+                        <div className="form-group d-none">
+                            <div className="input-wrapper">
+                                <input
+                                    type="text"
+                                    name="token"
+                                    value={form.token}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder=""
+                                    readOnly
+                                />
+                                <label>Token</label>
+                            </div>
                         </div>
+
+                        {/* New Password */}
+                        <div className="form-group">
+                            <div className="input-wrapper password-wrapper">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="newPassword"
+                                    value={form.newPassword}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder=""
+                                />
+                                <label>New Password</label>
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    <span className={`eye-icon ${showPassword ? 'show-password' : ''}`}></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Submit */}
+                        <button
+                            type="submit"
+                            className={`btn auth-btn ${loading ? 'loading' : ''}`}
+                        >
+                            <span className="btn-text">Reset Password</span>
+                            <span className="btn-loader"></span>
+                        </button>
+                    </form>
+
+                    <div className="signup-link">
+                        <p>
+                            Remember your password? <a href="/">Sign in</a>
+                        </p>
                     </div>
-
-                    {/* Submit */}
-                    <button
-                        type="submit"
-                        className={`btn auth-btn ${loading ? 'loading' : ''}`}
-                    >
-                        <span className="btn-text">Reset Password</span>
-                        <span className="btn-loader"></span>
-                    </button>
-                </form>
-
-                <div className="signup-link">
-                    <p>
-                        Remember your password? <a href="/">Sign in</a>
-                    </p>
                 </div>
             </div>
         </div>

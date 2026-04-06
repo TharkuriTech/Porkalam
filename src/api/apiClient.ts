@@ -9,7 +9,7 @@ const apiClient = axios.create({
 
 // ✅ Request interceptor (attach token)
 apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    const token = JSON.parse(localStorage.getItem('user') || 'null')?.token;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,6 +23,7 @@ apiClient.interceptors.response.use(
         console.error('API Error:', error.response?.data || error.message);
 
         if (error.response?.status === 401) {
+            localStorage.removeItem('user');
             // redirect to login
             window.location.href = '';
         }
