@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getUserData, clearUserData } from '../Util/Util.ts';
 
 const apiClient = axios.create({
     baseURL: process.env.REACT_APP_API_BASE_URL,
@@ -9,7 +10,8 @@ const apiClient = axios.create({
 
 // ✅ Request interceptor (attach token)
 apiClient.interceptors.request.use((config) => {
-    const token = JSON.parse(localStorage.getItem('user') || 'null')?.token;
+    const userData = getUserData();
+    const token = userData?.token;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,7 +25,7 @@ apiClient.interceptors.response.use(
         console.error('API Error:', error.response?.data || error.message);
 
         if (error.response?.status === 401) {
-            localStorage.removeItem('user');
+            clearUserData();
             // redirect to login
             window.location.href = '';
         }

@@ -6,6 +6,9 @@
   padding: 12px 24px;
   background: #111;
   color: #fff;
+  position: fixed;
+  width: 100%;
+  z-index: 1;
 }
 
 .nav-links {
@@ -33,7 +36,7 @@
 
 /* Content */
 .content {
-  padding-bottom: 50px;
+  padding-block: 50px;
 }
 
 .footer {

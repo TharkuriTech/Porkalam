@@ -3,21 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import '../Styles/Home.css';
 import apiClient from '../api/apiClient.ts';
-
-interface UserData {
-    userId: number;
-    userName: string;
-    fullName: string;
-    token: string;
-    expiration: string;
-}
+import { UserData, getUserData, clearUserData } from '../Util/Util.ts';
 
 interface Candidate {
+    candidateId: number;
     prefix?: string;
     name: string;
     qualification?: string;
     partyName: string;
     partyLogo: string;
+    partySymbol: string;
 }
 
 interface Thought {
@@ -126,15 +121,15 @@ function CandidatesList({ candidates = [] }: { candidates: Candidate[] }) {
             <h3 className="text-lg font-semibold mb-3">Your Constituency Candidates</h3>
 
             <div className="space-y-3 max-h-[320px] overflow-y-auto">
-                {candidates?.map((c, i) => (
+                {candidates.length > 0 ? (candidates?.map((c, i) => (
                     <div
-                        key={i}
+                        key={c.candidateId}
                         className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
                     >
                         {/* Party Image */}
                         <img
                             src={c.partyLogo}
-                            alt=""
+                            alt={`${c.partyName} logo`}
                             className="w-12 h-12 rounded-full"
                         />
 
@@ -147,8 +142,19 @@ function CandidatesList({ candidates = [] }: { candidates: Candidate[] }) {
                                 {c.partyName}
                             </p>
                         </div>
+
+                        {/* Symbol Image */}
+                        <img
+                            src={c.partySymbol}
+                            alt={`${c.partyName} symbol`}
+                            className="w-10 h-10"
+                        />
                     </div>
-                ))}
+                ))) : (
+                    <p className="text-gray-500 text-sm">
+                        No candidates available.
+                    </p>
+                )}
             </div>
         </div>
     );
@@ -201,17 +207,11 @@ const Home: React.FC = () => {
     const [thoughtMessage, setThoughtMessage] = useState('');
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
+        const user = getUserData();
 
-        if (storedUser) {
-            try {
-                const user = JSON.parse(storedUser);
-                setUserData(user);
-                getDashboardData(user.userId);
-            } catch (error) {
-                console.error('Failed to parse user data:', error);
-                navigate('/');
-            }
+        if (user) {
+            setUserData(user);
+            getDashboardData(user.userId);
         } else {
             handleLogout();
         }
@@ -241,7 +241,7 @@ const Home: React.FC = () => {
                 qualification: c.qualification,
                 partyName: c.partyShortName,
                 partyLogo: c.logoUrl,
-                symbolUrl: c.symbolUrl
+                partySymbol: c.symbolUrl
             }));
 
             setCandidates(mappedCandidates);
@@ -257,7 +257,7 @@ const Home: React.FC = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
+        clearUserData();
         navigate('/');
     };
     // Poll vote handler

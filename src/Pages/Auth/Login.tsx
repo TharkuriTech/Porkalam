@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
+import { setUserData } from '../../Util/Util.ts';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -36,7 +37,7 @@ const Login: React.FC = () => {
 
             if (response.data && response.data.token) {
                 // Store user data and token in localStorage
-                localStorage.setItem('user', JSON.stringify(response.data));
+                setUserData(response.data);
 
                 // Redirect to home page
                 navigate('/home');

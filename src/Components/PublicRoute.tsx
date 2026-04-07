@@ -1,7 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { getUserData } from '../Util/Util.ts';
 
 const PublicRoute = () => {
-    const user = localStorage.getItem('user');
+    const user = getUserData();
 
     if (user) {
         return <Navigate to="/home" replace />;
