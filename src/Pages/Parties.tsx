@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import apiClient from "../api/apiClient.ts";
+import Loader from "../Components/Loader.tsx";
 
 type Party = {
     partyId: number;
@@ -15,11 +16,17 @@ const Parties: React.FC = () => {
     const [search, setSearch] = useState("");
     const [sortField, setSortField] = useState<keyof Party>("partyName");
     const [sortAsc, setSortAsc] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     const getParties = async () => {
-        const res = await apiClient.get('/Home/get-parties');
-        setParties(res.data);
-        setFiltered(res.data);
+        setLoading(true);
+        try {
+            const res = await apiClient.get('/Home/get-parties');
+            setParties(res.data);
+            setFiltered(res.data);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -49,6 +56,10 @@ const Parties: React.FC = () => {
 
         setFiltered(data);
     }, [search, parties, sortField, sortAsc]);
+
+    if (loading) {
+        return <Loader />;
+    }
 
     const handleSort = (field: keyof Party) => {
         if (sortField === field) {

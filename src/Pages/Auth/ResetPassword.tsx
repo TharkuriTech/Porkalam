@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
+import Loader from '../../Components/Loader.tsx';
 
 const ResetPassword: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -51,6 +52,7 @@ const ResetPassword: React.FC = () => {
 
     return (
         <div className="auth-body">
+            {loading && <Loader />}
             <div className="auth-container">
                 <div className="auth-card">
                     <div className="auth-header">
@@ -83,6 +85,8 @@ const ResetPassword: React.FC = () => {
                                     name="newPassword"
                                     value={form.newPassword}
                                     onChange={handleChange}
+                                    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                                    title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
                                     required
                                     placeholder=""
                                 />

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserData, getUserData, clearUserData, setUserData } from "../Util/Util.ts";
+import { IUserData, getUserData, clearUserData, setUserData, ILookup } from "../Util/Util.ts";
 import apiClient from "../api/apiClient.ts";
+import Loader from "../Components/Loader.tsx";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<IUserData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<UserData>>({});
+  const [formData, setFormData] = useState<Partial<IUserData>>({});
   const [loading, setLoading] = useState(false);
 
   const comboDataList = [
@@ -15,21 +16,29 @@ const Profile: React.FC = () => {
     "State",
     "Constituency"
   ];
-  const [comboData, setComboData] = useState({
+  const [comboData, setComboData] = useState<{
+    Country: ILookup[];
+    State: ILookup[];
+    Constituency: ILookup[];
+  }>({
     Country: [],
     State: [],
     Constituency: []
   });
   const [filteredStates, setFilteredStates] = useState<any[]>([]);
   const [filteredConstituencies, setFilteredConstituencies] = useState<any[]>([]);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const getComboData = async () => {
+    setPageLoading(true);
     try {
       const response = await apiClient.post(`/Lookup/getComboData`, comboDataList);
       setComboData(response.data);
     }
     catch (error) {
       console.error(`Failed to fetch ${comboDataList} data:`, error);
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -72,6 +81,10 @@ const Profile: React.FC = () => {
     }
   }, [formData?.stateId, comboData.Constituency]);
 
+  if (pageLoading || loading) {
+    return <Loader />;
+  }
+
   const handleLogout = () => {
     clearUserData();
     navigate("/");
@@ -81,7 +94,7 @@ const Profile: React.FC = () => {
     let updatedData = { ...formData };
 
     if (field === 'countryId') {
-      const country = comboData.Country.find((c: any) => c.lookupId === Number(value));
+      const country = comboData.Country.find((c: ILookup) => c.lookupId === Number(value));
       updatedData = {
         ...updatedData,
         countryId: Number(value),
@@ -117,12 +130,13 @@ const Profile: React.FC = () => {
     setFormData(updatedData);
   };
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       setLoading(true);
       const response = await apiClient.post(`/User/save-user`, formData);
       if (response.data) {
-        const updatedUser = { ...user, ...formData } as UserData;
+        const updatedUser = { ...user, ...formData } as IUserData;
         setUser(updatedUser);
         setUserData(updatedUser);
         setIsEditing(false);
@@ -168,13 +182,12 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Sections */}
-        <div className="space-y-6 text-sm">
+        {isEditing ? (
+          <form onSubmit={handleSaveProfile} className="space-y-6 text-sm">
+            {/* Personal Info */}
+            <div>
+              <h3 className="font-semibold mb-2 text-gray-700">Personal Information</h3>
 
-          {/* Personal Info */}
-          <div>
-            <h3 className="font-semibold mb-2 text-gray-700">Personal Information</h3>
-
-            {isEditing ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-500 block mb-1">Full Name</label>
@@ -183,6 +196,7 @@ const Profile: React.FC = () => {
                     value={formData?.fullName || ""}
                     onChange={(e) => handleEditChange("fullName", e.target.value)}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   />
                 </div>
                 <div>
@@ -192,6 +206,7 @@ const Profile: React.FC = () => {
                     value={formData?.fatherName || ""}
                     onChange={(e) => handleEditChange("fatherName", e.target.value)}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   />
                 </div>
                 <div>
@@ -201,6 +216,7 @@ const Profile: React.FC = () => {
                     value={formData?.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split("T")[0] : ""}
                     onChange={(e) => handleEditChange("dateOfBirth", e.target.value)}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   />
                 </div>
                 <div>
@@ -209,6 +225,7 @@ const Profile: React.FC = () => {
                     value={formData?.gender || ""}
                     onChange={(e) => handleEditChange("gender", e.target.value)}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   >
                     <option value="">Select Gender</option>
                     <option value="M">Male</option>
@@ -217,21 +234,12 @@ const Profile: React.FC = () => {
                   </select>
                 </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div><span className="text-gray-500">Full Name:</span> <span className="font-medium">{user?.fullName}</span></div>
-                <div><span className="text-gray-500">Father Name:</span> <span className="font-medium">{user?.fatherName}</span></div>
-                <div><span className="text-gray-500">Date of Birth:</span> <span className="font-medium">{formatDate(user?.dateOfBirth || "")}</span></div>
-                <div><span className="text-gray-500">Gender:</span> <span className="font-medium">{user?.gender == "M" ? "Male" : user?.gender == "F" ? "Female" : "Other"}</span></div>
-              </div>
-            )}
-          </div>
+            </div>
 
-          {/* Contact Info */}
-          <div>
-            <h3 className="font-semibold mb-2 text-gray-700">Contact Information</h3>
+            {/* Contact Info */}
+            <div>
+              <h3 className="font-semibold mb-2 text-gray-700">Contact Information</h3>
 
-            {isEditing ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-500 block mb-1">Email</label>
@@ -240,31 +248,27 @@ const Profile: React.FC = () => {
                     value={formData?.email || ""}
                     onChange={(e) => handleEditChange("email", e.target.value)}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   />
                 </div>
                 <div>
                   <label className="text-gray-500 block mb-1">Mobile Number</label>
                   <input
                     type="tel"
+                    pattern="[0-9]{10}"
                     value={formData?.mobileNumber || ""}
                     onChange={(e) => handleEditChange("mobileNumber", e.target.value)}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   />
                 </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div><span className="text-gray-500">Email:</span> <span className="font-medium">{user?.email}</span></div>
-                <div><span className="text-gray-500">Mobile:</span> <span className="font-medium">{user?.mobileNumber}</span></div>
-              </div>
-            )}
-          </div>
+            </div>
 
-          {/* Location Info */}
-          <div>
-            <h3 className="font-semibold mb-2 text-gray-700">Location</h3>
+            {/* Location Info */}
+            <div>
+              <h3 className="font-semibold mb-2 text-gray-700">Location</h3>
 
-            {isEditing ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-500 block mb-1">Country</label>
@@ -272,6 +276,7 @@ const Profile: React.FC = () => {
                     value={formData?.countryId || ""}
                     onChange={(e) => handleEditChange("countryId", Number(e.target.value))}
                     className="w-full border border-gray-300 rounded px-2 py-1"
+                    required
                   >
                     <option value="">Select Country</option>
                     {comboData.Country.map((item: any) => (
@@ -287,6 +292,7 @@ const Profile: React.FC = () => {
                     className="w-full border border-gray-300 rounded px-2 py-1"
                     disabled={!formData?.countryId}
                     title={!formData?.countryId ? "Please select a country first" : ""}
+                    required
                   >
                     <option value="">Select State</option>
                     {filteredStates.map((item: any) => (
@@ -302,6 +308,7 @@ const Profile: React.FC = () => {
                     className="w-full border border-gray-300 rounded px-2 py-1"
                     disabled={!formData?.stateId}
                     title={!formData?.stateId ? "Please select a state first" : ""}
+                    required
                   >
                     <option value="">Select Constituency</option>
                     {filteredConstituencies.map((item: any) => (
@@ -310,24 +317,12 @@ const Profile: React.FC = () => {
                   </select>
                 </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div><span className="text-gray-500">Country:</span> <span className="font-medium">{user?.country}</span></div>
-                <div><span className="text-gray-500">State:</span> <span className="font-medium">{user?.state}</span></div>
-                <div><span className="text-gray-500">Constituency:</span> <span className="font-medium">{user?.constituency}</span></div>
-              </div>
-            )}
-          </div>
+            </div>
 
-        </div>
-
-        {/* Actions */}
-        <div className="mt-6 space-y-3">
-
-          {isEditing ? (
-            <>
+            {/* Actions */}
+            <div className="mt-6 space-y-3">
               <button
-                onClick={handleSaveProfile}
+                type="submit"
                 disabled={loading}
                 className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
               >
@@ -335,32 +330,70 @@ const Profile: React.FC = () => {
               </button>
 
               <button
+                type="button"
                 onClick={handleCancel}
                 disabled={loading}
                 className="w-full bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition disabled:bg-gray-300"
               >
                 Cancel
               </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Edit Profile
-              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-6 text-sm">
+            {/* Personal Info */}
+            <div>
+              <h3 className="font-semibold mb-2 text-gray-700">Personal Information</h3>
 
-              <button
-                onClick={handleLogout}
-                className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition"
-              >
-                Logout
-              </button>
-            </>
-          )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div><span className="text-gray-500">Full Name:</span> <span className="font-medium">{user?.fullName}</span></div>
+                <div><span className="text-gray-500">Father Name:</span> <span className="font-medium">{user?.fatherName}</span></div>
+                <div><span className="text-gray-500">Date of Birth:</span> <span className="font-medium">{formatDate(user?.dateOfBirth || "")}</span></div>
+                <div><span className="text-gray-500">Gender:</span> <span className="font-medium">{user?.gender == "M" ? "Male" : user?.gender == "F" ? "Female" : "Other"}</span></div>
+              </div>
+            </div>
 
-        </div>
+            {/* Contact Info */}
+            <div>
+              <h3 className="font-semibold mb-2 text-gray-700">Contact Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div><span className="text-gray-500">Email:</span> <span className="font-medium">{user?.email}</span></div>
+                <div><span className="text-gray-500">Mobile:</span> <span className="font-medium">{user?.mobileNumber}</span></div>
+              </div>
+            </div>
+
+            {/* Location Info */}
+            <div>
+              <h3 className="font-semibold mb-2 text-gray-700">Location</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div><span className="text-gray-500">Country:</span> <span className="font-medium">{user?.country}</span></div>
+                <div><span className="text-gray-500">State:</span> <span className="font-medium">{user?.state}</span></div>
+                <div><span className="text-gray-500">Constituency:</span> <span className="font-medium">{user?.constituency}</span></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        {!isEditing && (
+          <div className="mt-6 space-y-3">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Edit Profile
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition"
+            >
+              Logout
+            </button>
+          </div>
+        )}
 
       </div>
 

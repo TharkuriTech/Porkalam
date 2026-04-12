@@ -1,41 +1,77 @@
 import { useEffect, useState } from "react";
 import apiClient from "../api/apiClient.ts";
-
-type Candidate = {
-    candidateId: number;
-    fullName: string;
-    prefix: string;
-    qualification: string;
-    partyName: string;
-    partyShortName: string;
-    profileImageUrl: string;
-    logoUrl: string;
-    symbolUrl: string;
-    isIndependent: boolean;
-};
+import { ICandidate } from "../Util/Util.ts";
+import Loader from "../Components/Loader.tsx";
 
 const Candidates: React.FC = () => {
-    const [candidates, setCandidates] = useState<Candidate[]>([]);
-    const [filtered, setFiltered] = useState<Candidate[]>([]);
+    const [candidates, setCandidates] = useState<ICandidate[]>([]);
+    const [filtered, setFiltered] = useState<ICandidate[]>([]);
     const [search, setSearch] = useState("");
-    const [sortField, setSortField] = useState<keyof Candidate>("fullName");
+    const [sortField, setSortField] = useState<keyof ICandidate>("name");
     const [sortAsc, setSortAsc] = useState(true);
-    const [selectedParty, setSelectedParty] = useState("");
-    const [partyList, setPartyList] = useState<string[]>([]);
+    const [selectedParty, setSelectedParty] = useState(0);
+    const [selectedConstituency, setSelectedConstituency] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
+    const [hasSearchStarted, setHasSearchStarted] = useState(false);
+    const comboDataList = [
+        "Party",
+        "Constituency"
+    ];
+    const [comboData, setComboData] = useState({
+        Party: [],
+        Constituency: []
+    });
+
+    const getComboData = async () => {
+        setPageLoading(true);
+        try {
+            const response = await apiClient.post(`/Lookup/getComboData`, comboDataList);
+            setComboData(response.data);
+        }
+        catch (error) {
+            console.error(`Failed to fetch ${comboDataList} data:`, error);
+        } finally {
+            setPageLoading(false);
+        }
+    };
 
     const getCandidates = async () => {
-        const res = await apiClient.get("/Home/get-candidates");
-        const data: Candidate[] = res.data ?? [];
+        if (!selectedParty && !selectedConstituency) {
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const params = {
+                partyId: selectedParty,
+                constituencyId: selectedConstituency
+            }
+            const res = await apiClient.post("/Home/get-candidates", params);
+            // 🧑‍💼 Candidates
+            const mappedCandidates = res.data.map((c: any) => ({
+                candidateId: c.candidateId,
+                name: c.candidateName,
+                description: c.description,
+                image: c.profileImageUrl,
+                isIndependent: c.isIndependent,
+                constituency: c.constituency,
+                partyName: c.partyName,
+                partyShortName: c.partyShortName,
+                partyLogo: c.logoUrl,
+                symbol: c.symbolUrl
+            }));
+            const data: ICandidate[] = mappedCandidates;
 
-        setCandidates(data);
-        setFiltered(data);
-
-        const parties = [...new Set(data.map((c: any) => c.partyShortName))];
-        setPartyList(parties);
+            setCandidates(data);
+            setFiltered(data);
+        } finally {
+            setIsLoading(false);
+            setHasSearchStarted(true);
+        }
     };
 
     useEffect(() => {
-        getCandidates();
+        getComboData();
     }, []);
 
     useEffect(() => {
@@ -44,14 +80,9 @@ const Candidates: React.FC = () => {
         // 🔍 Search
         if (search) {
             data = data.filter(c =>
-                c.fullName.toLowerCase().includes(search.toLowerCase()) ||
+                c.name.toLowerCase().includes(search.toLowerCase()) ||
                 c.partyShortName.toLowerCase().includes(search.toLowerCase())
             );
-        }
-
-        // 🎯 Party filter
-        if (selectedParty) {
-            data = data.filter(c => c.partyShortName === selectedParty);
         }
 
         // 🔃 Sorting
@@ -67,7 +98,11 @@ const Candidates: React.FC = () => {
         setFiltered(data);
     }, [search, selectedParty, candidates, sortField, sortAsc]);
 
-    const handleSort = (field: keyof Candidate) => {
+    if (pageLoading || isLoading) {
+        return <Loader />;
+    }
+
+    const handleSort = (field: keyof ICandidate) => {
         if (sortField === field) {
             setSortAsc(!sortAsc);
         } else {
@@ -76,7 +111,7 @@ const Candidates: React.FC = () => {
         }
     };
 
-    const getSortIcon = (field: keyof Candidate) => {
+    const getSortIcon = (field: keyof ICandidate) => {
         if (sortField !== field) return "↑↓";
         return sortAsc ? "↑" : "↓";
     };
@@ -98,20 +133,50 @@ const Candidates: React.FC = () => {
                 {/* 🎯 Party Filter */}
                 <select
                     value={selectedParty}
-                    onChange={(e) => setSelectedParty(e.target.value)}
+                    onChange={(e) => {
+                        setSelectedParty(+e.target.value);
+                    }}
                     className="border border-gray-300 bg-white px-3 py-2 rounded-lg w-full md:w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                    <option value="">All Parties</option>
-                    {partyList.map((p) => (
-                        <option key={p} value={p}>
-                            {p}
+                    <option value="">Select Party</option>
+                    {comboData.Party.map((p: any) => (
+                        <option key={'party' + p.lookupId} value={p.lookupId}>
+                            {p.value}
                         </option>
                     ))}
                 </select>
+
+                <select
+                    value={selectedConstituency}
+                    onChange={(e) => {
+                        setSelectedConstituency(+e.target.value);
+                    }}
+                    className="border border-gray-300 bg-white px-3 py-2 rounded-lg w-full md:w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Select Constituency</option>
+                    {comboData.Constituency.map((c: any) => (
+                        <option key={'constituency' + c.lookupId} value={c.lookupId}>
+                            {c.value}
+                        </option>
+                    ))}
+                </select>
+
+                <button
+                    onClick={getCandidates}
+                    disabled={!selectedParty && !selectedConstituency}
+                    className="bg-blue-600 text-white px-3 py-2 rounded-lg disabled:bg-gray-300 disabled:text-gray-600"
+                >
+                    {isLoading ? "Loading..." : "Search"}
+                </button>
+
                 <button
                     onClick={() => {
                         setSearch("");
-                        setSelectedParty("");
+                        setSelectedParty(0);
+                        setSelectedConstituency(0);
+                        setCandidates([]);
+                        setFiltered([]);
+                        setHasSearchStarted(false);
                     }}
                     className="bg-gray-200 px-3 py-2 rounded-lg"
                 >
@@ -121,26 +186,29 @@ const Candidates: React.FC = () => {
 
             {/* Table */}
             <div className="overflow-x-auto bg-white rounded-2xl shadow">
-                <table className="min-w-full text-sm">
+                <table className="min-w-full text-sm text-left">
 
-                    <thead className="bg-gray-100 text-xs uppercase">
+                    {/* Header */}
+                    <thead className="bg-gray-100 uppercase text-xs">
                         <tr>
 
-                            <th className="p-3 cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort("fullName")}>
+                            <th className="p-3 cursor-pointer" onClick={() => handleSort("name")}>
                                 <div className="flex items-center gap-1 whitespace-nowrap">
-                                    Name <span>{getSortIcon("fullName")}</span>
+                                    Name <span>{getSortIcon("name")}</span>
                                 </div>
                             </th>
-                            <th className="p-3 cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort("qualification")}>
-                                <div className="flex items-center gap-1 whitespace-nowrap">
-                                    Qualification {getSortIcon("qualification")}
-                                </div>
-                            </th>
+
                             <th className="p-3">Image</th>
 
-                            <th className="p-3 cursor-pointer select-none whitespace-nowrap" onClick={() => handleSort("partyShortName")}>
+                            <th className="p-3 cursor-pointer" onClick={() => handleSort("partyShortName")}>
                                 <div className="flex items-center gap-1 whitespace-nowrap">
                                     Party {getSortIcon("partyShortName")}
+                                </div>
+                            </th>
+
+                            <th className="p-3 cursor-pointer" onClick={() => handleSort("constituency")}>
+                                <div className="flex items-center gap-1 whitespace-nowrap">
+                                    Constituency {getSortIcon("constituency")}
                                 </div>
                             </th>
 
@@ -152,17 +220,16 @@ const Candidates: React.FC = () => {
                     </thead>
 
                     <tbody>
-                        {filtered.map(c => (
+                        {filtered.length > 0 ? (filtered.map(c => (
                             <tr key={c.candidateId} className="border-t hover:bg-gray-50">
 
                                 <td className="p-3 font-medium">
-                                    {c.prefix} {c.fullName}
+                                    <a href={c.description} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        {c.name}
+                                    </a>
                                 </td>
                                 <td className="p-3">
-                                    {c.qualification}
-                                </td>
-                                <td className="p-3">
-                                    <img src={c.profileImageUrl} className="w-10 h-10 object-cover rounded-full" />
+                                    <img src={c.image} className="w-10 h-10 object-cover rounded-full" />
                                 </td>
 
                                 <td className="p-3">
@@ -170,16 +237,28 @@ const Candidates: React.FC = () => {
                                 </td>
 
                                 <td className="p-3">
-                                    <img src={c.logoUrl} className="w-10 h-10 object-contain" />
+                                    {c.constituency}
                                 </td>
 
                                 <td className="p-3">
-                                    <img src={c.symbolUrl} className="w-10 h-10 object-contain" />
+                                    <img src={c.partyLogo} className="w-10 h-10 object-contain" />
+                                </td>
+
+                                <td className="p-3">
+                                    <img src={c.symbol} className="w-10 h-10 object-contain" />
                                 </td>
                             </tr>
-                        ))}
+                        ))) : (
+                            <tr>
+                                <td colSpan={6} className="p-3 text-center text-gray-500">
+                                    {hasSearchStarted
+                                        ? "No candidates found."
+                                        : "Select a party or constituency and click Search to view candidates."
+                                    }
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
-
                 </table>
             </div>
         </div>

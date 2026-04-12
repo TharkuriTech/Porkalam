@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
+import Loader from '../../Components/Loader.tsx';
 
-interface RegisterForm {
+interface IRegisterForm {
     fullName: string;
     fatherName: string;
     dateOfBirth: string;
@@ -16,7 +17,7 @@ interface RegisterForm {
 }
 
 const Register: React.FC = () => {
-    const [form, setForm] = useState<RegisterForm>({
+    const [form, setForm] = useState<IRegisterForm>({
         fullName: '',
         fatherName: '',
         dateOfBirth: '',
@@ -36,6 +37,7 @@ const Register: React.FC = () => {
     ];
 
     const [loading, setLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
     const [responseMessage, setResponseMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
@@ -94,12 +96,15 @@ const Register: React.FC = () => {
     }, [form.stateId]);
 
     const getComboData = async () => {
+        setPageLoading(true);
         try {
             const response = await apiClient.post(`/Lookup/getComboData`, comboDataList);
             setComboData(response.data);
         }
         catch (error) {
             console.error(`Failed to fetch ${comboDataList} data:`, error);
+        } finally {
+            setPageLoading(false);
         }
     };
     const handleSubmit = async (e: React.FormEvent) => {
@@ -148,6 +153,7 @@ const Register: React.FC = () => {
 
     return (
         <div className="auth-body">
+            {(loading || pageLoading) && <Loader />}
             <div className="auth-container w-100">
                 <div className="auth-card">
                     <div className="auth-header">
@@ -223,6 +229,8 @@ const Register: React.FC = () => {
                                         name="password"
                                         value={form.password}
                                         onChange={handleChange}
+                                        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                                        title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
                                         required
                                         placeholder=''
                                     />
@@ -260,6 +268,7 @@ const Register: React.FC = () => {
                                         onChange={handleChange}
                                         required
                                         pattern="[0-9]{10}"
+                                        maxLength={10}
                                         placeholder="1234567890"
                                     />
                                     <label>Mobile Number</label>

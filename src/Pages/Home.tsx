@@ -3,19 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import '../Styles/Home.css';
 import apiClient from '../api/apiClient.ts';
-import { UserData, getUserData, clearUserData } from '../Util/Util.ts';
+import { IUserData, getUserData, clearUserData, ICandidate } from '../Util/Util.ts';
+import Loader from '../Components/Loader.tsx';
 
-interface Candidate {
-    candidateId: number;
-    prefix?: string;
-    name: string;
-    qualification?: string;
-    partyName: string;
-    partyLogo: string;
-    partySymbol: string;
-}
-
-interface Thought {
+interface IThought {
     message: string;
 }
 function UpcomingElectionCard() {
@@ -115,7 +106,7 @@ function OpinionPollCard({ hasVoted = false, wantChange = { yes: 0, no: 0 }, onV
         </div>
     );
 }
-function CandidatesList({ candidates = [] }: { candidates: Candidate[] }) {
+function CandidatesList({ candidates = [] }: { candidates: ICandidate[] }) {
     return (
         <div className="bg-white p-4 rounded-2xl shadow max-h-[440px]">
             <h3 className="text-lg font-semibold mb-3">Your Constituency Candidates</h3>
@@ -124,29 +115,28 @@ function CandidatesList({ candidates = [] }: { candidates: Candidate[] }) {
                 {candidates.length > 0 ? (candidates?.map((c, i) => (
                     <div
                         key={c.candidateId}
-                        className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                        className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 justify-between" 
                     >
-                        {/* Party Image */}
                         <img
-                            src={c.partyLogo}
-                            alt={`${c.partyName} logo`}
+                            src={c.image}
+                            alt={`${c.name.toLocaleLowerCase()} image`}
                             className="w-12 h-12 rounded-full"
                         />
 
-                        {/* Details */}
                         <div>
                             <p className="font-semibold">
-                                {c.prefix} {c.name} {c.qualification}
+                                <a href={c.description} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                    {c.name}
+                                </a>
                             </p>
                             <p className="text-sm text-gray-500">
-                                {c.partyName}
+                                {c.isIndependent ? c.partyName : c.partyShortName}
                             </p>
                         </div>
 
-                        {/* Symbol Image */}
                         <img
-                            src={c.partySymbol}
-                            alt={`${c.partyName} symbol`}
+                            src={c.symbol}
+                            alt={`${c.partyShortName} symbol`}
                             className="w-10 h-10"
                         />
                     </div>
@@ -159,7 +149,7 @@ function CandidatesList({ candidates = [] }: { candidates: Candidate[] }) {
         </div>
     );
 }
-function PeopleThoughts({ thoughts = [], onAddThoughtClick }: { thoughts: Thought[]; onAddThoughtClick: () => void }) {
+function PeopleThoughts({ thoughts = [], onAddThoughtClick }: { thoughts: IThought[]; onAddThoughtClick: () => void }) {
     return (
         <div className="bg-white p-4 rounded-2xl shadow max-h-[440px]">
             <div className="relative mb-3">
@@ -192,13 +182,13 @@ function PeopleThoughts({ thoughts = [], onAddThoughtClick }: { thoughts: Though
 const Home: React.FC = () => {
     const navigate = useNavigate();
 
-    const [userData, setUserData] = useState<UserData | null>(null);
+    const [userData, setUserData] = useState<IUserData | null>(null);
     const [loading, setLoading] = useState(true);
 
     const [hasVoted, setHasVoted] = useState(false);
     const [wantChange, setWantChange] = useState({ yes: 0, no: 0 });
-    const [candidates, setCandidates] = useState<Candidate[]>([]);
-    const [thoughts, setThoughts] = useState<Thought[]>([]);
+    const [candidates, setCandidates] = useState<ICandidate[]>([]);
+    const [thoughts, setThoughts] = useState<IThought[]>([]);
 
     // Modal states
     const [showPollModal, setShowPollModal] = useState(false);
@@ -236,12 +226,14 @@ const Home: React.FC = () => {
             // 🧑‍💼 Candidates
             const mappedCandidates = data.candidates.map((c: any) => ({
                 candidateId: c.candidateId,
-                prefix: c.prefix,
                 name: c.candidateName,
-                qualification: c.qualification,
-                partyName: c.partyShortName,
+                description: c.description,
+                image: c.profileImageUrl,
+                isIndependent: c.isIndependent,
+                partyName: c.partyName,
+                partyShortName: c.partyShortName,
                 partyLogo: c.logoUrl,
-                partySymbol: c.symbolUrl
+                symbol: c.symbolUrl
             }));
 
             setCandidates(mappedCandidates);
@@ -296,7 +288,7 @@ const Home: React.FC = () => {
         }
     };
     if (loading) {
-        return <div className="text-center mt-10">Loading...</div>;
+        return <Loader />;
     }
 
     if (!userData) return null;

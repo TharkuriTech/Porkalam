@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
 import { setUserData } from '../../Util/Util.ts';
+import Loader from '../../Components/Loader.tsx';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -55,6 +56,7 @@ const Login: React.FC = () => {
 
     return (
         <div className="auth-body">
+            {loading && <Loader />}
             <div className="auth-container">
                 <div className="auth-card">
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../../Styles/Auth.css';
 import apiClient from '../../api/apiClient.ts';
 import { getIPAddress } from '../../Util/Util.ts';
+import Loader from '../../Components/Loader.tsx';
 
 const ForgotPassword: React.FC = () => {
     const [form, setForm] = useState({
@@ -41,6 +42,7 @@ const ForgotPassword: React.FC = () => {
 
     return (
         <div className="auth-body">
+            {loading && <Loader />}
             <div className="auth-container">
                 <div className="auth-card">
                     <div className="auth-header">

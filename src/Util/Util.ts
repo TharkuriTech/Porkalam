@@ -1,4 +1,4 @@
-export interface UserData {
+export interface IUserData {
   userId: number;
   userName: string;
   fullName: string;
@@ -17,16 +17,37 @@ export interface UserData {
   country: string;
   isVerified: boolean;
 }
+export interface ILookup {
+  lookupId: number;
+  lookupTypeId: number;
+  parentLookupId: number;
+  value: string;
+  shortValue: string;
+  isActive: boolean;
+  isDeleted: boolean;
+}
+export interface ICandidate {
+    candidateId: number;
+    name: string;
+    description: string;
+    image: string;
+    isIndependent: boolean;
+    partyName: string;
+    partyShortName: string;
+    partyLogo: string;
+    symbol: string;
+    constituency: string;
+}
 
-export const setUserData = (userData: UserData): void => {
+export const setUserData = (userData: IUserData): void => {
   localStorage.setItem('user', JSON.stringify(userData));
 };
 
-export const getUserData = (): UserData | null => {
+export const getUserData = (): IUserData | null => {
   const storedUser = localStorage.getItem('user');
   if (storedUser) {
     try {
-      return JSON.parse(storedUser) as UserData;
+      return JSON.parse(storedUser) as IUserData;
     } catch (error) {
       console.error('Failed to parse user data:', error);
       return null;

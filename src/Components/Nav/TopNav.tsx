@@ -5,7 +5,7 @@ import { navItems } from "./navConfig.ts";
 export default function TopNav() {
   return (
     <div className="topnav">
-      <div className="logo">PORKALAM.COM</div>
+      <NavLink to="/" className="logo">PORKALAM.COM</NavLink>
 
       <div className="nav-links">
         {navItems.map((item) => {
