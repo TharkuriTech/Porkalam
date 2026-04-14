@@ -19,7 +19,7 @@ function UpcomingElectionCard({ navigate }: { navigate: (path: string) => void }
             </p>
             <h3 className="text-lg font-semibold">But E-Election Started here</h3>
 
-            <button onClick={() => navigate('/e-vote')} className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+            <button onClick={() => navigate('/e-vote')} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
                 E-Vote Now
             </button>
             <p className="text-gray-500 mt-2">
