@@ -192,6 +192,8 @@ const Candidates: React.FC = () => {
                     <thead className="bg-gray-100 uppercase text-xs">
                         <tr>
 
+                            <th className="p-3">S.No</th>
+
                             <th className="p-3 cursor-pointer" onClick={() => handleSort("name")}>
                                 <div className="flex items-center gap-1 whitespace-nowrap">
                                     Name <span>{getSortIcon("name")}</span>
@@ -220,8 +222,12 @@ const Candidates: React.FC = () => {
                     </thead>
 
                     <tbody>
-                        {filtered.length > 0 ? (filtered.map(c => (
+                        {filtered.length > 0 ? (filtered.map((c, index) => (
                             <tr key={c.candidateId} className="border-t hover:bg-gray-50">
+
+                                <td className="p-3 font-medium">
+                                    {index + 1}
+                                </td>
 
                                 <td className="p-3 font-medium">
                                     <a href={c.description} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
@@ -229,7 +235,7 @@ const Candidates: React.FC = () => {
                                     </a>
                                 </td>
                                 <td className="p-3">
-                                    <img src={c.image} className="w-10 h-10 object-cover rounded-full" />
+                                    <img src={c.image} className="w-10 h-10 object-cover" />
                                 </td>
 
                                 <td className="p-3">
@@ -250,7 +256,7 @@ const Candidates: React.FC = () => {
                             </tr>
                         ))) : (
                             <tr>
-                                <td colSpan={6} className="p-3 text-center text-gray-500">
+                                <td colSpan={7} className="p-3 text-center text-gray-500">
                                     {hasSearchStarted
                                         ? "No candidates found."
                                         : "Select a party or constituency and click Search to view candidates."

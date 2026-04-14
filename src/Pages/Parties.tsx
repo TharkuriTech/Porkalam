@@ -95,6 +95,7 @@ const Parties: React.FC = () => {
                     {/* Header */}
                     <thead className="bg-gray-100 uppercase text-xs">
                         <tr>
+                            <th className="p-3">S.No</th>
                             <th className="p-3 cursor-pointer" onClick={() => handleSort("partyName")}>
                                 Party Name {getSortIcon("partyName")}
                             </th>
@@ -108,8 +109,12 @@ const Parties: React.FC = () => {
 
                     {/* Body */}
                     <tbody>
-                        {filtered?.map((p) => (
+                        {filtered?.map((p, index) => (
                             <tr key={p.partyId} className="border-t hover:bg-gray-50">
+
+                                <td className="p-3 font-medium">
+                                    {index + 1}
+                                </td>
 
                                 <td className="p-3 font-medium">
                                     {p.partyName}
