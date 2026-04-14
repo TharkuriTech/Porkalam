@@ -9,7 +9,7 @@ import Loader from '../Components/Loader.tsx';
 interface IThought {
     message: string;
 }
-function UpcomingElectionCard() {
+function UpcomingElectionCard({ navigate }: { navigate: (path: string) => void }) {
     return (
         <div className="bg-white p-4 rounded-2xl shadow content-center">
             <h3 className="text-lg font-semibold">Upcoming Election</h3>
@@ -17,11 +17,11 @@ function UpcomingElectionCard() {
             <p className="text-2xl font-bold text-blue-600 mb-4">
                 23 April 2026
             </p>
-            <h3 className="text-lg font-semibold">Election Result</h3>
+            <h3 className="text-lg font-semibold">But E-Election Started here</h3>
 
-            <p className="text-2xl font-bold text-blue-600 mb-4">
-                4 May 2026
-            </p>
+            <button onClick={() => navigate('/e-vote')} className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+                E-Vote Now
+            </button>
             <p className="text-gray-500 mt-2">
                 Tamil Nadu Legislative Assembly election
             </p>
@@ -115,7 +115,7 @@ function CandidatesList({ candidates = [] }: { candidates: ICandidate[] }) {
                 {candidates.length > 0 ? (candidates?.map((c, i) => (
                     <div
                         key={c.candidateId}
-                        className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 justify-between" 
+                        className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 justify-between"
                     >
                         <img
                             src={c.image}
@@ -309,7 +309,7 @@ const Home: React.FC = () => {
 
                 {/* Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <UpcomingElectionCard />
+                    <UpcomingElectionCard navigate={navigate} />
                     <OpinionPollCard
                         hasVoted={hasVoted}
                         wantChange={wantChange}
