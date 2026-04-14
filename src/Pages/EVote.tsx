@@ -151,14 +151,6 @@ const EVote: React.FC = () => {
                     >
                       {/* Left Section */}
                       <div className="flex items-center gap-2">
-
-                        {/* 👇 Show only on md+ screens */}
-                        <img
-                          src={c.image}
-                          alt={c.name}
-                          className="hidden md:block w-12 h-12 rounded-full object-cover"
-                        />
-
                         <div>
                           <p className="font-semibold">
                             <a
@@ -190,7 +182,11 @@ const EVote: React.FC = () => {
 
                       {/* Right Section */}
                       <div className="flex items-center gap-4 md:gap-6">
-
+                        <img
+                          src={c.image}
+                          alt={c.name}
+                          className="block w-12 h-12 rounded-full object-cover"
+                        />
                         {/* Symbol */}
                         <img
                           src={c.symbol}
@@ -215,11 +211,6 @@ const EVote: React.FC = () => {
                     className="flex items-center justify-between gap-3 p-3 border rounded-lg hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-2">
-                      <img
-                        src={NOTA_IMAGE}
-                        alt="NOTA"
-                        className="hidden md:block w-12 h-12 rounded-full object-cover"
-                      />
                       <div>
                         <p className="font-semibold text-black-600 text-lg">NOTA</p>
                         {/* <div className="text-sm text-gray-500">None of the Above</div> */}
@@ -228,9 +219,14 @@ const EVote: React.FC = () => {
 
                     <div className="flex items-center gap-4 md:gap-6">
                       <img
+                        src={NOTA_IMAGE}
+                        alt="NOTA"
+                        className="block w-12 h-12 rounded-full object-cover"
+                      />
+                      <img
                         src={nota}
                         alt="NOTA symbol"
-                        className="h-10"
+                        className="h-10 w-10"
                       />
                       <button
                         onClick={() => castVote(-1)}
