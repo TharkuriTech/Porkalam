@@ -17,10 +17,15 @@ function UpcomingElectionCard({ navigate }: { navigate: (path: string) => void }
             <p className="text-2xl font-bold text-blue-600 mb-4">
                 23 April 2026
             </p>
-            <h3 className="text-lg font-semibold">But E-Election Started here</h3>
+            <p className="text-gray-700 font-medium mb-3">
+                E-Voting is now open
+            </p>
 
-            <button onClick={() => navigate('/e-vote')} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
-                E-Vote Now
+            <button
+                onClick={() => navigate('/e-vote')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+            >
+                Vote Now
             </button>
             <p className="text-gray-500 mt-2">
                 Tamil Nadu Legislative Assembly election
