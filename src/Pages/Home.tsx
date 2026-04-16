@@ -9,6 +9,9 @@ import Loader from '../Components/Loader.tsx';
 interface IThought {
     message: string;
 }
+interface ILiveVoteCandidate extends ICandidate {
+    voteCount?: number;
+}
 function UpcomingElectionCard({ navigate }: { navigate: (path: string) => void }) {
     return (
         <div className="bg-white p-4 rounded-2xl shadow content-center">
@@ -154,6 +157,79 @@ function CandidatesList({ candidates = [] }: { candidates: ICandidate[] }) {
         </div>
     );
 }
+function LiveEVoteCountsCard({ candidates = [], onRefresh, loading }: { candidates: ILiveVoteCandidate[]; onRefresh: () => void; loading: boolean }) {
+    return (
+        <div className="bg-white p-4 rounded-2xl shadow max-h-[440px] flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold">Live eVote Counts</h3>
+                <button
+                    type="button"
+                    onClick={onRefresh}
+                    disabled={loading}
+                    className="inline-flex items-center justify-center rounded-full p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50"
+                    aria-label="Refresh live vote counts"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.05-.27 2.03-.74 2.9l1.46 1.46C19.31 14.4 20 13.26 20 12c0-4.42-3.58-8-8-8zm-6.26 2.1L4.28 4.64C2.69 6.26 2 7.63 2 9c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6 0-1.05.27-2.03.74-2.9z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div className="space-y-3 overflow-y-auto max-h-[360px]">
+                {candidates.length > 0 ? (
+                    candidates.map((c) => (
+                        <div
+                            key={c.candidateId}
+                            className="flex items-center justify-between gap-3 p-3 border rounded-lg hover:bg-gray-50"
+                        >
+                            <div className="flex items-center gap-2">
+                                <div>
+                                    <p className="font-semibold text-left">
+                                        <a href={c.description} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                            {c.name}
+                                        </a>
+                                    </p>
+                                    <div className="text-sm text-gray-500 flex items-center gap-1">
+                                        {c.isIndependent ? (
+                                            c.partyName
+                                        ) : (
+                                            <>
+                                                <img
+                                                    src={c.partyLogo}
+                                                    alt={c.partyShortName}
+                                                    className="w-4 h-4"
+                                                />
+                                                {c.partyShortName}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 md:gap-6">
+                                <img
+                                    src={c.image}
+                                    alt={c.name}
+                                    className="block w-12 h-12 rounded-full object-cover"
+                                />
+                                <img
+                                    src={c.symbol}
+                                    alt="symbol"
+                                    className="w-10 h-10 hidden md:block"
+                                />
+                                <span className="bg-gray-100 text-gray-700 rounded-lg px-4 py-1 text-sm font-semibold">
+                                    {loading ? 'Refreshing...' : `${c.voteCount ?? 0} votes`}
+                                </span>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-gray-500 text-sm">No live vote counts available.</p>
+                )}
+            </div>
+        </div>
+    );
+}
 function PeopleThoughts({ thoughts = [], onAddThoughtClick }: { thoughts: IThought[]; onAddThoughtClick: () => void }) {
     return (
         <div className="bg-white p-4 rounded-2xl shadow max-h-[440px]">
@@ -193,6 +269,8 @@ const Home: React.FC = () => {
     const [hasVoted, setHasVoted] = useState(false);
     const [wantChange, setWantChange] = useState({ yes: 0, no: 0 });
     const [candidates, setCandidates] = useState<ICandidate[]>([]);
+    const [liveVoteCounts, setLiveVoteCounts] = useState<ILiveVoteCandidate[]>([]);
+    const [liveCountsLoading, setLiveCountsLoading] = useState(false);
     const [thoughts, setThoughts] = useState<IThought[]>([]);
 
     // Modal states
@@ -240,16 +318,52 @@ const Home: React.FC = () => {
                 partyLogo: c.logoUrl,
                 symbol: c.symbolUrl
             }));
+            
+            const mappedLiveCounts = data.candidatesVotes.map((c: any) => ({
+                candidateId: c.candidateId,
+                name: c.candidateName,
+                description: c.description,
+                image: c.profileImageUrl,
+                isIndependent: c.isIndependent,
+                partyName: c.partyName,
+                partyShortName: c.partyShortName,
+                partyLogo: c.logoUrl,
+                symbol: c.symbolUrl,
+                voteCount: c.voteCount
+            }));
 
+            setLiveVoteCounts(mappedLiveCounts);
             setCandidates(mappedCandidates);
-
-            // 💬 Thoughts
             setThoughts(data.thoughts ?? []);
 
         } catch (error) {
             console.error('Dashboard fetch failed:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchLiveVoteCounts = async () => {
+        try {
+            setLiveCountsLoading(true);
+            const response = await apiClient.get('/Home/get-candidates-votes');
+            const mappedLiveCounts = response.data.candidatesVotes.map((c: any) => ({
+                candidateId: c.candidateId,
+                name: c.candidateName,
+                description: c.description,
+                image: c.profileImageUrl,
+                isIndependent: c.isIndependent,
+                partyName: c.partyName,
+                partyShortName: c.partyShortName,
+                partyLogo: c.logoUrl,
+                symbol: c.symbolUrl,
+                voteCount: c.voteCount
+            }));
+            setLiveVoteCounts(mappedLiveCounts);
+        } catch (error) {
+            console.error('Failed to load live vote counts:', error);
+        } finally {
+            setLiveCountsLoading(false);
         }
     };
 
@@ -319,6 +433,11 @@ const Home: React.FC = () => {
                         hasVoted={hasVoted}
                         wantChange={wantChange}
                         onVoteClick={() => setShowPollModal(true)}
+                    />
+                    <LiveEVoteCountsCard
+                        candidates={liveVoteCounts}
+                        onRefresh={fetchLiveVoteCounts}
+                        loading={liveCountsLoading}
                     />
                     <CandidatesList candidates={candidates} />
                     <PeopleThoughts
